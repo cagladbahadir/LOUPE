@@ -15,14 +15,18 @@ model = unet_leaky_two_channel(64,3,1)
 def custom_mse(y_true, y_pred):
     regu = K.mean(K.abs(y_pred[:,:,:,0]))
     return (1-lambda) x regu
+    
 def custom_mae(y_true,y_pred):
     loss_mae = K.mean(K.abs(y_true-y_pred))
     return lambda x loss_mae
 
 k_space = np.random.uniform(low=0.0, high=1.0, size=(len(true_ch),256,256,1)) #second entry for the output which is a pseudo entry to be able to have 2 loss functions. The second loss function doesn't take this into consideration as it calculates the loss on the prediction and not the ground truth
+
 par_model = multi_gpu_model(model, gpus=8)
+
 par_model.compile(optimizer='Adam', loss=[custom_mae,custom_mse])
-history = par_model.fit(true_ch, [true_ch,k_space], validation_split=0.3, epochs=200, batch_size=32, verbose=1,callbacks=callbacks_list)
+
+history = par_model.fit(true_ch, [true_ch,k_space], validation_split=0.3, epochs=200, batch_size=32,verbose=1,callbacks=callbacks_list)
 
 # TRAINED MODEL WEIGHTS
 
