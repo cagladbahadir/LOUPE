@@ -5,6 +5,8 @@ Acquisition of Magnetic Resonance Imaging (MRI) scans can be accelerated by unde
 # CUSTOM LAYERS
 
 LocalThresholdingLayer: Learns the probabilistic mask p on the 2D grid
+ThresholdRandomMask: Compares p and u and applies hard sigmoid to acquire m binary mask 
+RandomMask: Corresponds to vector u in the Eq.3 the paper https://arxiv.org/abs/1901.01960. Creates a random uniform mask between 0 and 1 for the thresholding function
 
 # HOW TO CALL THE FUNCTION
 
