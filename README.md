@@ -33,4 +33,4 @@ history = par_model.fit(true_ch, [true_ch,k_space], validation_split=0.3, epochs
 ```
 # TRAINED MODEL WEIGHTS
 
-Trained model weights for LOUPE and individual U-Nets for different mask configurations are available upon request. Please contact Cagla Deniz Bahadir (cagladeniz94@gmail.com) for the weight files.
+Trained model weights for LOUPE and individual U-Nets for different mask configurations are available upon request due to large file sizes. Please contact Cagla Deniz Bahadir (cagladeniz94@gmail.com) for the weight files.
