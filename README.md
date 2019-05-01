@@ -13,15 +13,17 @@ RandomMask: Corresponds to vector u in the Eq.3 the paper https://arxiv.org/abs/
 # HOW TO CALL THE FUNCTION
 
 ```python
+lmbd = 0.980 # depends on the sparsity level
+
 model = unet_leaky_two_channel(64,3,1)
 
 def custom_mse(y_true, y_pred):
     regu = K.mean(K.abs(y_pred[:,:,:,0]))
-    return (1-lambda) x regu
+    return (1-lmbd) * regu
     
 def custom_mae(y_true,y_pred):
     loss_mae = K.mean(K.abs(y_true-y_pred))
-    return lambda x loss_mae
+    return lmbd * loss_mae
 
 k_space = np.random.uniform(low=0.0, high=1.0, size=(len(true_ch),256,256,1)) #second entry for the output which is a pseudo entry to be able to have 2 loss functions. The second loss function doesn't take this into consideration as it calculates the loss on the prediction and not the ground truth
 
@@ -31,6 +33,11 @@ par_model.compile(optimizer='Adam', loss=[custom_mae,custom_mse])
 
 history = par_model.fit(true_ch, [true_ch,k_space], validation_split=0.3, epochs=200, batch_size=32,verbose=1,callbacks=callbacks_list)
 ```
+
+# CITATION 
+
+Please cite the paper for usage of the open source code in publications: Bahadir, Cagla Deniz, Adrian V. Dalca, and Mert R. Sabuncu. "Learning-based Optimization of the Under-sampling Pattern in MRI." arXiv preprint arXiv:1901.01960 (2019).
+
 # TRAINED MODEL WEIGHTS
 
 Trained model weights for LOUPE and individual U-Nets for different mask configurations are available upon request due to large file sizes. Please contact Cagla Deniz Bahadir (cagladeniz94@gmail.com) for the weight files.
