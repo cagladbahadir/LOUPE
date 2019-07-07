@@ -239,7 +239,7 @@ def unet_leaky_two_channel(filt=64,kern=3,model_type=0):
         
     add_1 = Add()([abs_layer,conv9])
     if model_type==0:
-        model = Model(input = inputs, output = add_1)
+        model = Model(input = inputs, output = [add_1, last_tensor_hold])
     else:
         model = Model(input = inputs, output = [add_1,last_tensor_hold,last_tensor_mask])
     
