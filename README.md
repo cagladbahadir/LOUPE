@@ -40,7 +40,7 @@ history = par_model.fit(true_ch, [true_ch,k_space], validation_split=0.3, epochs
 
 `ThresholdRandomMask`: Compares p and u and applies hard sigmoid to acquire m binary mask 
 
-`RandomMask`: Creates a random uniform mask between 0 and 1 for the thresholding function. Corresponds to vector u in the Eq. 3 in the paper https://arxiv.org/abs/1901.01960. 
+`RandomMask`: Creates a random uniform mask between 0 and 1 for the thresholding function. Corresponds to vector u in the Eq. 3 in the [paper](https://arxiv.org/abs/1901.01960). 
 
 
 # Citation 
