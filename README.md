@@ -1,7 +1,6 @@
 # LOUPE: Learning-based Optimization of the Under-sampling PattErn 
 
-LOUPE (Python implementation in keras/tensorflow)  simultanously optimizes the under-sampling pattern and reconstruction model for MRI.  
-See [abstract](#abstract) and [paper](#citation) for more details.
+LOUPE (Python implementation in keras/tensorflow)  simultanously optimizes the under-sampling pattern and reconstruction model for MRI. See [abstract](#abstract) and [paper](#citation) for more details.
 
 
 # Training LOUPE
