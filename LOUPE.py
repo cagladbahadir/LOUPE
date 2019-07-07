@@ -81,7 +81,7 @@ class ThresholdRandomMask(Layer):
     """
 
     def __init__(self, my_initializer=RandomUniform(minval=0.0, maxval=1.0, seed=None), **kwargs):
-               self.initializer = my_initializer
+        self.initializer = my_initializer
         super(ThresholdRandomMask, self).__init__(**kwargs)
 
     def build(self, input_shape):
