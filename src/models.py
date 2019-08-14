@@ -19,9 +19,8 @@ import sys
 import keras.models
 import numpy as np
 from keras import backend as K
-from keras.layers import Layer, Activation, Subtract, LeakyReLU
-from keras.layers import Input, Conv3D, MaxPooling3D, UpSampling3D, Conv3DTranspose, Dropout, AveragePooling2D
-from keras.layers import Reshape, Conv2D, MaxPooling2D, UpSampling2D
+from keras.layers import Layer, Activation, LeakyReLU
+from keras.layers import Input, AveragePooling2D, Conv2D, MaxPooling2D, UpSampling2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.merge import Concatenate, Add
 

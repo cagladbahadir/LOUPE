@@ -31,7 +31,7 @@ import models
 # TODO put them in the form of ArgumentParser()
 #   see e.g. https://github.com/voxelmorph/voxelmorph/blob/master/src/train.py
 gpu_id = 5  # gpu id
-models_dir = '/home/gid-dalcaav/projects/loupe/models/test_v2/'
+models_dir = '/../models/v2_test/' # change this to a location to save models
 nb_epochs_train = 2
 batch_size = 32
 sparsity = 0.1
