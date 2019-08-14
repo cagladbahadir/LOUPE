@@ -1,13 +1,13 @@
-# LOUPE: Learning-based Optimization of the Under-sampling PattErn 
+# LOUPE
+## Learning-based Optimization of the Under-sampling PattErn 
 
-LOUPE (Python implementation in keras/tensorflow) simultanously optimizes the under-sampling pattern and reconstruction model for MRI. See [abstract](#abstract) and [paper](#citation) for more details.
 
 
-# Training LOUPE
+Python implementation in keras/tensorflow of LOUPE, which simultanously optimizes the under-sampling pattern and reconstruction model for MRI. See [abstract](#abstract) and [paper](#citation) for more details.
+
+
+# Training 
 Please see train_ipmi.py for an example of how to train LOUPE (this uses FASHION_MNIST as an example dataset).
-
-# Legacy Code (LOUPE 1.0)
-Code for the original LOUPE code was moved to the [legacy](legacy) folder.
 
 # Citation 
 
@@ -16,6 +16,8 @@ If you use the open source code, please cite:
 Cagla D. Bahadir, Adrian V. Dalca, and Mert R. Sabuncu.  
 IPMI: Information Processing in Medical Imaging (2019). [arXiv:1901.01960](https://arxiv.org/abs/1901.01960).
 
+# Legacy Code (v1.0)
+Code for the original LOUPE code was moved to the [legacy](legacy) folder.
 
 # Abstract
 Learning-based Optimization of the Under-sampling Pattern in MRI
