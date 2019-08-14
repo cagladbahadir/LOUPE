@@ -7,7 +7,7 @@ Python implementation in keras/tensorflow of LOUPE, which simultanously optimize
 
 
 # Training 
-Please see [train_ipmi.py](loupe/train_ipmi.py) for an example of how to train LOUPE (this uses FASHION_MNIST as an example dataset).
+Please see [train_ipmi.py](train_ipmi.py) for an example of how to train LOUPE (this uses FASHION_MNIST as an example dataset).
 
 # Citation 
 
