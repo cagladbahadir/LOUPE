@@ -74,6 +74,9 @@ def loupe_model(input_shape=(256,256,1),
         if model_type == 'v2':
             assert sparsity is not None, 'for this model, need desired sparsity to be specified'
             prob_mask_tensor = layers.RescaleProbMap(sparsity, name='prob_mask_scaled')(prob_mask_tensor)
+
+        else:
+            assert sparsity is None, 'for v1 model, cannot specify sparsity'
         
         # Realization of probability mask
         thresh_tensor = layers.RandomMask(name='random_mask')(prob_mask_tensor) 
