@@ -25,8 +25,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers.merge import Concatenate, Add
 
 # local models
-import layers
-
+from . import layers
 
 
 def loupe_model(input_shape=(256,256,1),
