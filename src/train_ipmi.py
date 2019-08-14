@@ -34,7 +34,7 @@ import models
 gpu_id = 7  # gpu id
 lmbd = 0.99 # original loss functions from LOUPE website, will affect sparsity level
 models_dir = '/../models/ipmi_test/' # change this to a location to save models
-nb_epochs_train = 2
+nb_epochs_train = 60
 batch_size = 32
 
 
