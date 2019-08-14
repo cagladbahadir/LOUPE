@@ -22,7 +22,7 @@ from keras.callbacks import ModelCheckpoint
 import keras.models
 
 # loupe
-import models
+from loupe import models
 
 ###############################################################################
 # parameters
