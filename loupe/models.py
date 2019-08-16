@@ -82,14 +82,14 @@ def loupe_model(input_shape=(256,256,1),
         last_tensor_mask = layers.ThresholdRandomMask(name='sampled_mask')([prob_mask_tensor, thresh_tensor]) 
 
         # Under-sample and back to image space via IFFT
-        last_tensor = layers.UnderSample()([last_tensor, last_tensor_mask])
-        last_tensor = layers.IFFT()(last_tensor)
-
-    # complex absolute layer
-    abs_tensor = layers.ComplexAbs()(last_tensor)
+        last_tensor = layers.UnderSample(name='under_sample_kspace')([last_tensor, last_tensor_mask])
+        last_tensor = layers.IFFT('under_sample_img')(last_tensor)
 
     # hard-coded UNet
     unet_tensor = _unet_from_tensor(last_tensor, filt, kern, acti)      
+
+    # complex absolute layer
+    abs_tensor = layers.ComplexAbs(name='complex_addition')(last_tensor)
 
     # final output from model 
     add_tensor = Add(name='unet_output')([abs_tensor, unet_tensor])
