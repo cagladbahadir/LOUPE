@@ -83,7 +83,7 @@ def loupe_model(input_shape=(256,256,1),
 
         # Under-sample and back to image space via IFFT
         last_tensor = layers.UnderSample(name='under_sample_kspace')([last_tensor, last_tensor_mask])
-        last_tensor = layers.IFFT('under_sample_img')(last_tensor)
+        last_tensor = layers.IFFT(name='under_sample_img')(last_tensor)
 
     # hard-coded UNet
     unet_tensor = _unet_from_tensor(last_tensor, filt, kern, acti)      
