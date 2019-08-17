@@ -101,7 +101,7 @@ class ThresholdRandomMask(Layer):
     """
 
     def __init__(self, slope = 12, **kwargs):
-        self.slope = slope
+        self.slope = slope # higher slope means a more step-function-like logistic function
         super(ThresholdRandomMask, self).__init__(**kwargs)
 
     def build(self, input_shape):
