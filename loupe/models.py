@@ -33,6 +33,7 @@ def loupe_model(input_shape=(256,256,1),
                 kern=3,
                 sparsity=None,
                 pmask_slope=5,
+                sample_slope=12,
                 acti=None,
                 model_type=0):
     """
@@ -79,7 +80,7 @@ def loupe_model(input_shape=(256,256,1),
         
         # Realization of probability mask
         thresh_tensor = layers.RandomMask(name='random_mask')(prob_mask_tensor) 
-        last_tensor_mask = layers.ThresholdRandomMask(name='sampled_mask')([prob_mask_tensor, thresh_tensor]) 
+        last_tensor_mask = layers.ThresholdRandomMask(slope=sample_slope, name='sampled_mask')([prob_mask_tensor, thresh_tensor]) 
 
         # Under-sample and back to image space via IFFT
         last_tensor = layers.UnderSample(name='under_sample_kspace')([last_tensor, last_tensor_mask])
