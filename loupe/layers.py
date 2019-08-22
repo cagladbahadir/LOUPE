@@ -13,7 +13,7 @@
 from keras.layers import Layer
 import keras.backend as K
 import tensorflow as tf
-from keras.initializers import RandomUniform
+from keras.initializers import RandomUniform, RandomNormal
 
 
 
@@ -58,12 +58,25 @@ class ProbMask(Layer):
     """
     
     def __init__(self, slope=10,
-                 my_initializer=RandomUniform(minval=-2.0, maxval=2.0, seed=None),
+                 initializer=None,
                  **kwargs):
-    
-        self.initializer = my_initializer
+        """
+        note that in v1 the initial initializer was uniform in [-A, +A] where A is some scalar.
+        e.g. was RandomUniform(minval=-2.0, maxval=2.0, seed=None),
+        But this is uniform *in the logit space* (since we take sigmoid of this), so probabilities
+        were concentrated a lot in the edges, which led to very slow convergence, I think.
+
+        IN v2, the default initializer is a logit of the uniform [0, 1] distribution,
+        which fixes this issue
+        """
+
+        if initializer == None:
+            self.initializer = self._logit_slope_random_uniform
+        else:
+            self.initializer = initializer
         self.slope = slope
         super(ProbMask, self).__init__(**kwargs)
+
 
     def build(self, input_shape):
         """
@@ -89,6 +102,13 @@ class ProbMask(Layer):
         lst = list(input_shape)
         lst[-1] = 1
         return tuple(lst)
+
+    def _logit_slope_random_uniform(self, shape, dtype=None):
+        eps = 1e-6
+        x = K.random_uniform(shape, dtype=dtype, minval=eps, maxval=1.0-eps) # [0, 1]
+        
+        # logit with slope factor
+        return - tf.log(1. / x - 1.) / self.slope
     
     
 class ThresholdRandomMask(Layer):
