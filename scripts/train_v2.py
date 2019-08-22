@@ -24,13 +24,14 @@ import keras.models
 # loupe
 from loupe import models
 
+
 ###############################################################################
 # parameters
 ###############################################################################
 
 # TODO put them in the form of ArgumentParser()
 #   see e.g. https://github.com/voxelmorph/voxelmorph/blob/master/src/train.py
-gpu_id = 5  # gpu id
+gpu_id = 0  # gpu id
 models_dir = '../models/v2_test/' # change this to a location to save models
 nb_epochs_train = 60
 batch_size = 32
@@ -62,11 +63,12 @@ val_data = xdata[0:1,...]
 xdata = xdata[1:,...]
 vol_size = xdata.shape[1:-1]
 
+
 ###############################################################################
 # Prepare model
 ###############################################################################
 
-# train model
+# load model
 model = models.loupe_model(input_shape=vol_size + (1,), filt=64, kern=3,
                            model_type='v2', sparsity=sparsity)
 
@@ -76,6 +78,7 @@ model.compile(optimizer='Adam', loss='mae')
 # prepare save folder
 if not os.path.isdir(models_dir): os.makedirs(models_dir)
 filename = os.path.join(models_dir, 'model.{epoch:02d}.hdf5')
+
 
 ###############################################################################
 # Train model
