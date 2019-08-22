@@ -103,8 +103,9 @@ class ProbMask(Layer):
         lst[-1] = 1
         return tuple(lst)
 
-    def _logit_slope_random_uniform(self, shape, dtype=None):
-        eps = 1e-6
+    def _logit_slope_random_uniform(self, shape, dtype=None, eps=0.01):
+        # eps could be very small, or somethinkg like eps = 1e-6
+        #   the idea is how far from the tails to have your initialization.
         x = K.random_uniform(shape, dtype=dtype, minval=eps, maxval=1.0-eps) # [0, 1]
         
         # logit with slope factor
