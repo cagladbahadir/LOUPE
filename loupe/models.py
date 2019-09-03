@@ -65,8 +65,8 @@ def loupe_model(input_shape=(256,256,1),
         # inputs
         inputs = Input(shape=input_shape, name='input')
 
-        # input -> kspace
-        last_tensor = layers.FFT()(inputs) # FFT operation
+        # input -> kspace via FFT
+        last_tensor = layers.FFT(name='fft')(inputs)
 
         # build probability mask
         prob_mask_tensor = layers.ProbMask(name='prob_mask', slope=pmask_slope)(last_tensor) 
