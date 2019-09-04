@@ -213,7 +213,7 @@ class UnderSample(Layer):
 
 class FFT(Layer):
     """
-    ifft layer
+    fft layer
     """
 
     def __init__(self, **kwargs):
@@ -234,7 +234,7 @@ class FFT(Layer):
 
     def compute_output_shape(self, input_shape):
         list_input_shape = list(input_shape)
-        list_input_shape[-1] = 1
+        list_input_shape[-1] = 2
         return tuple(list_input_shape)
 
 
