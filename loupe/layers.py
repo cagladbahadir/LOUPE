@@ -74,7 +74,11 @@ class ProbMask(Layer):
             self.initializer = self._logit_slope_random_uniform
         else:
             self.initializer = initializer
-        self.slope = slope
+
+        # higher slope means a more step-function-like logistic function
+        # note: slope is converted to a tensor so that we can update it 
+        #   during training if necessary
+        self.slope = tf.Variable(slope, dtype=tf.float32)
         super(ProbMask, self).__init__(**kwargs)
 
 
@@ -103,6 +107,7 @@ class ProbMask(Layer):
         lst[-1] = 1
         return tuple(lst)
 
+
     def _logit_slope_random_uniform(self, shape, dtype=None, eps=0.01):
         # eps could be very small, or somethinkg like eps = 1e-6
         #   the idea is how far from the tails to have your initialization.
@@ -122,7 +127,15 @@ class ThresholdRandomMask(Layer):
     """
 
     def __init__(self, slope = 12, **kwargs):
-        self.slope = slope # higher slope means a more step-function-like logistic function
+        """
+        if slope is None, it will be a hard threshold.
+        """
+        # higher slope means a more step-function-like logistic function
+        # note: slope is converted to a tensor so that we can update it 
+        #   during training if necessary
+        self.slope = None
+        if slope is not None:
+            self.slope = tf.Variable(slope, dtype=tf.float32) 
         super(ThresholdRandomMask, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -131,7 +144,10 @@ class ThresholdRandomMask(Layer):
     def call(self, x):
         inputs = x[0]
         thresh = x[1]
-        return tf.sigmoid(self.slope * (inputs-thresh))
+        if self.slope is not None:
+            return tf.sigmoid(self.slope * (inputs-thresh))
+        else:
+            return inputs > thresh
 
     def compute_output_shape(self, input_shape):
         return input_shape[0]
