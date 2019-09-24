@@ -33,9 +33,10 @@ def loupe_model(input_shape=(256,256,1),
                 kern=3,
                 sparsity=None,
                 pmask_slope=5,
+                pmask_init=None,
                 sample_slope=12,
                 acti=None,
-                model_type=0):
+                model_type='v2'):
     """
     loupe_model
 
@@ -58,7 +59,22 @@ def loupe_model(input_shape=(256,256,1),
     if model_type == 'unet': # Creates a single U-Net
         inputs = Input(shape=input_shape, name='input')
         last_tensor = inputs
-        
+
+    elif model_type == 'loupe_mask_input':
+  
+        # inputs
+        inputs = [Input(shape=input_shape, name='input'), Input(shape=input_shape, name='mask_input')]
+
+        # input -> kspace via FFT
+        last_tensor = layers.FFT(name='fft')(inputs[0])
+
+        # input mask
+        last_tensor_mask = inputs[1]
+
+        # Under-sample and back to image space via IFFT
+        last_tensor = layers.UnderSample(name='under_sample_kspace')([last_tensor, last_tensor_mask])
+        last_tensor = layers.IFFT(name='under_sample_img')(last_tensor)
+
     else: # Creates LOUPE
         assert model_type in ['v1', 'v2'], 'model_type should be unet, v1 or v2'
 
@@ -69,7 +85,7 @@ def loupe_model(input_shape=(256,256,1),
         last_tensor = layers.FFT(name='fft')(inputs)
 
         # build probability mask
-        prob_mask_tensor = layers.ProbMask(name='prob_mask', slope=pmask_slope)(last_tensor) 
+        prob_mask_tensor = layers.ProbMask(name='prob_mask', slope=pmask_slope, initializer=pmask_init)(last_tensor) 
         
         if model_type == 'v2':
             assert sparsity is not None, 'for this model, need desired sparsity to be specified'
@@ -87,7 +103,7 @@ def loupe_model(input_shape=(256,256,1),
         last_tensor = layers.IFFT(name='under_sample_img')(last_tensor)
 
     # hard-coded UNet
-    unet_tensor = _unet_from_tensor(last_tensor, filt, kern, acti)      
+    unet_tensor = _unet_from_tensor(last_tensor, filt, kern, acti, output_nb_feats=input_shape[-1])      
 
     # complex absolute layer
     abs_tensor = layers.ComplexAbs(name='complex_addition')(last_tensor)
@@ -103,97 +119,98 @@ def loupe_model(input_shape=(256,256,1),
     return keras.models.Model(inputs, outputs)
 
 
-def _unet_from_tensor(tensor, filt, kern, acti):
+def _unet_from_tensor(tensor, filt, kern, acti, output_nb_feats=1):
     """
     UNet used in LOUPE
 
     TODO: this is quite rigid right now and hardcoded (# layers, features, etc)
+    - use for loops and such crazy things
     - use a richer library for this, perhaps neuron
     """
 
     # start first convolution of UNet
-    conv1 = Conv2D(filt, kern, activation = acti, padding = 'same')(tensor)
+    conv1 = Conv2D(filt, kern, activation = acti, padding = 'same', name='conv_1_1')(tensor)
     conv1 = LeakyReLU()(conv1)
-    conv1 = BatchNormalization()(conv1)
-    conv1 = Conv2D(filt, kern, activation = acti, padding = 'same')(conv1)
+    conv1 = BatchNormalization(name='batch_norm_1_1')(conv1)
+    conv1 = Conv2D(filt, kern, activation = acti, padding = 'same', name='conv_1_2')(conv1)
     conv1 = LeakyReLU()(conv1)
-    conv1 = BatchNormalization()(conv1)
+    conv1 = BatchNormalization(name='batch_norm_1_2')(conv1)
     
     pool1 = AveragePooling2D(pool_size=(2, 2))(conv1)
     
-    conv2 = Conv2D(filt*2, kern, activation = acti, padding = 'same')(pool1)
+    conv2 = Conv2D(filt*2, kern, activation = acti, padding = 'same', name='conv_2_1')(pool1)
     conv2 = LeakyReLU()(conv2)
-    conv2 = BatchNormalization()(conv2)
-    conv2 = Conv2D(filt*2, kern, activation = acti, padding = 'same')(conv2)
+    conv2 = BatchNormalization(name='batch_norm_2_1')(conv2)
+    conv2 = Conv2D(filt*2, kern, activation = acti, padding = 'same', name='conv_2_2')(conv2)
     conv2 = LeakyReLU()(conv2)
-    conv2 = BatchNormalization()(conv2)
+    conv2 = BatchNormalization(name='batch_norm_2_2')(conv2)
     
     pool2 = AveragePooling2D(pool_size=(2, 2))(conv2)
     
-    conv3 = Conv2D(filt*4, kern, activation = acti, padding = 'same')(pool2)
+    conv3 = Conv2D(filt*4, kern, activation = acti, padding = 'same', name='conv_3_1')(pool2)
     conv3 = LeakyReLU()(conv3)
-    conv3 = BatchNormalization()(conv3)
-    conv3 = Conv2D(filt*4, kern, activation = acti, padding = 'same')(conv3)
+    conv3 = BatchNormalization(name='batch_norm_3_1')(conv3)
+    conv3 = Conv2D(filt*4, kern, activation = acti, padding = 'same', name='conv_3_2')(conv3)
     conv3 = LeakyReLU()(conv3)
-    conv3 = BatchNormalization()(conv3)
+    conv3 = BatchNormalization(name='batch_norm_3_2')(conv3)
     
     pool3 = AveragePooling2D(pool_size=(2, 2))(conv3)
     
-    conv4 = Conv2D(filt*8, kern, activation = acti, padding = 'same')(pool3)
+    conv4 = Conv2D(filt*8, kern, activation = acti, padding = 'same', name='conv_4_1')(pool3)
     conv4 = LeakyReLU()(conv4)
-    conv4 = BatchNormalization()(conv4)
-    conv4 = Conv2D(filt*8, kern, activation = acti, padding = 'same')(conv4)
+    conv4 = BatchNormalization(name='batch_norm_4_1')(conv4)
+    conv4 = Conv2D(filt*8, kern, activation = acti, padding = 'same', name='conv_4_2')(conv4)
     conv4 = LeakyReLU()(conv4)
-    conv4 = BatchNormalization()(conv4)
+    conv4 = BatchNormalization(name='batch_norm_4_2')(conv4)
     
     pool4 = AveragePooling2D(pool_size=(2, 2))(conv4)
 
-    conv5 = Conv2D(filt*16, kern, activation = acti, padding = 'same')(pool4)
+    conv5 = Conv2D(filt*16, kern, activation = acti, padding = 'same', name='conv_5_1')(pool4)
     conv5 = LeakyReLU()(conv5)
-    conv5 = BatchNormalization()(conv5)
-    conv5 = Conv2D(filt*16, kern, activation = acti, padding = 'same')(conv5)
+    conv5 = BatchNormalization(name='batch_norm_5_1')(conv5)
+    conv5 = Conv2D(filt*16, kern, activation = acti, padding = 'same', name='conv_5_2')(conv5)
     conv5 = LeakyReLU()(conv5)
-    conv5 = BatchNormalization()(conv5)
+    conv5 = BatchNormalization(name='batch_norm_5_2')(conv5)
 
     sub1 = UpSampling2D(size=(2, 2))(conv5)
     concat1 = Concatenate(axis=-1)([conv4,sub1])
     
-    conv6 = Conv2D(filt*8, kern, activation = acti, padding = 'same')(concat1)
+    conv6 = Conv2D(filt*8, kern, activation = acti, padding = 'same', name='conv_6_1')(concat1)
     conv6 = LeakyReLU()(conv6)
-    conv6 = BatchNormalization()(conv6)
-    conv6 = Conv2D(filt*8, kern, activation = acti, padding = 'same')(conv6)
+    conv6 = BatchNormalization(name='batch_norm_6_1')(conv6)
+    conv6 = Conv2D(filt*8, kern, activation = acti, padding = 'same', name='conv_6_2')(conv6)
     conv6 = LeakyReLU()(conv6)
-    conv6 = BatchNormalization()(conv6)
+    conv6 = BatchNormalization(name='batch_norm_6_2')(conv6)
 
     sub2 = UpSampling2D(size=(2, 2))(conv6)
     concat2 = Concatenate(axis=-1)([conv3,sub2])
     
-    conv7 = Conv2D(filt*4, kern, activation = acti, padding = 'same')(concat2)
+    conv7 = Conv2D(filt*4, kern, activation = acti, padding = 'same', name='conv_7_1')(concat2)
     conv7 = LeakyReLU()(conv7)
-    conv7 = BatchNormalization()(conv7)
-    conv7 = Conv2D(filt*4, kern, activation = acti, padding = 'same')(conv7)
+    conv7 = BatchNormalization(name='batch_norm_7_1')(conv7)
+    conv7 = Conv2D(filt*4, kern, activation = acti, padding = 'same', name='conv_7_2')(conv7)
     conv7 = LeakyReLU()(conv7)
-    conv7 = BatchNormalization()(conv7)
+    conv7 = BatchNormalization(name='batch_norm_7_2')(conv7)
 
     sub3 = UpSampling2D(size=(2, 2))(conv7)
     concat3 = Concatenate(axis=-1)([conv2,sub3])
     
-    conv8 = Conv2D(filt*2, kern, activation = acti, padding = 'same')(concat3)
+    conv8 = Conv2D(filt*2, kern, activation = acti, padding = 'same', name='conv_8_1')(concat3)
     conv8 = LeakyReLU()(conv8)
-    conv8 = BatchNormalization()(conv8)
-    conv8 = Conv2D(filt*2, kern, activation = acti, padding = 'same')(conv8)
+    conv8 = BatchNormalization(name='batch_norm_8_1')(conv8)
+    conv8 = Conv2D(filt*2, kern, activation = acti, padding = 'same', name='conv_8_2')(conv8)
     conv8 = LeakyReLU()(conv8)
-    conv8 = BatchNormalization()(conv8)
+    conv8 = BatchNormalization(name='batch_norm_8_2')(conv8)
 
     sub4 = UpSampling2D(size=(2, 2))(conv8)
     concat4 = Concatenate(axis=-1)([conv1,sub4])
     
-    conv9 = Conv2D(filt, kern, activation = acti, padding = 'same')(concat4)
+    conv9 = Conv2D(filt, kern, activation = acti, padding = 'same', name='conv_9_1')(concat4)
     conv9 = LeakyReLU()(conv9)
-    conv9 = BatchNormalization()(conv9)
-    conv9 = Conv2D(filt, kern, activation = acti, padding = 'same')(conv9)
+    conv9 = BatchNormalization(name='batch_norm_9_1')(conv9)
+    conv9 = Conv2D(filt, kern, activation = acti, padding = 'same', name='conv_9_2')(conv9)
     conv9 = LeakyReLU()(conv9)
-    conv9 = BatchNormalization()(conv9)
-    conv9 = Conv2D(1, 1, padding = 'same')(conv9)
+    conv9 = BatchNormalization(name='batch_norm_9_2')(conv9)
+    conv9 = Conv2D(output_nb_feats, 1, padding = 'same', name='conv_9_3')(conv9)
     
     return conv9
