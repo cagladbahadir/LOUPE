@@ -65,8 +65,13 @@ def loupe_model(input_shape=(256,256,1),
         # inputs
         inputs = [Input(shape=input_shape, name='input'), Input(shape=input_shape, name='mask_input')]
 
+        last_tensor = inputs[0]
+        # if necessary, concatenate with zeros for FFT
+        if input_shape[-1] == 1:
+            last_tensor = layers.ConcatenateZero(name='concat_zero')(last_tensor)
+
         # input -> kspace via FFT
-        last_tensor = layers.FFT(name='fft')(inputs[0])
+        last_tensor = layers.FFT(name='fft')(last_tensor)
 
         # input mask
         last_tensor_mask = inputs[1]
@@ -81,8 +86,13 @@ def loupe_model(input_shape=(256,256,1),
         # inputs
         inputs = Input(shape=input_shape, name='input')
 
+        last_tensor = inputs
+        # if necessary, concatenate with zeros for FFT
+        if input_shape[-1] == 1:
+            last_tensor = layers.ConcatenateZero(name='concat_zero')(last_tensor)
+
         # input -> kspace via FFT
-        last_tensor = layers.FFT(name='fft')(inputs)
+        last_tensor = layers.FFT(name='fft')(last_tensor)
 
         # build probability mask
         prob_mask_tensor = layers.ProbMask(name='prob_mask', slope=pmask_slope, initializer=pmask_init)(last_tensor) 

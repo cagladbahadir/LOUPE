@@ -188,8 +188,8 @@ class ComplexAbs(Layer):
 
     def call(self, inputs):
         two_channel = tf.complex(inputs[..., 0], inputs[..., 1])
-        shape = tf.shape(tf.expand_dims(two_channel, -1))
-        two_channel = tf.reshape(two_channel, shape)
+        two_channel = tf.expand_dims(two_channel, -1)
+        
         two_channel = tf.abs(two_channel)
         two_channel = tf.cast(two_channel, tf.float32)
         return two_channel
@@ -204,7 +204,7 @@ class UnderSample(Layer):
     """
     Under-sampling by multiplication of k-space with the mask
 
-    Inputs: [kspace, mask]
+    Inputs: [kspace (2-channel), mask (single-channel)]
     """
 
     def __init__(self, **kwargs):
@@ -216,10 +216,8 @@ class UnderSample(Layer):
     def call(self, inputs):
         k_space_r = tf.multiply(inputs[0][..., 0], inputs[1][..., 0])
         k_space_i = tf.multiply(inputs[0][..., 1], inputs[1][..., 0])
-        shape = tf.shape(tf.expand_dims(k_space_r, -1))
-        k_space_r = tf.reshape(k_space_r,shape)
-        k_space_i = tf.reshape(k_space_i,shape)
-        k_space = tf.concat([k_space_r, k_space_i], axis = -1)
+
+        k_space = tf.stack([k_space_r, k_space_i], axis = -1)
         k_space = tf.cast(k_space, tf.float32)
         return k_space
 
@@ -227,55 +225,113 @@ class UnderSample(Layer):
         return input_shape[0]
 
 
+
+
+class ConcatenateZero(Layer):
+    """
+    Concatenate input with a zero'ed version of itself
+
+    Input: tf.float32 of size [batch_size, ..., n]
+    Output: tf.float32 of size [batch_size, ..., n*2]
+    """
+
+    def __init__(self, **kwargs):
+        super(ConcatenateZero, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        super(ConcatenateZero, self).build(input_shape)
+
+    def call(self, inputx):
+        return tf.concat([inputx, inputx*0], -1)
+
+
+    def compute_output_shape(self, input_shape):
+        input_shape_list = list(input_shape)
+        input_shape_list[-1] *= 2
+        return tuple(input_shape_list)
+
+
+
+
 class FFT(Layer):
     """
-    fft layer
+    fft layer, assuming the real/imag are input/output via two features
+
+    Input: tf.float32 of size [batch_size, ..., 2]
+    Output: tf.float32 of size [batch_size, ..., 2]
     """
 
     def __init__(self, **kwargs):
         super(FFT, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        # some input checking
+        assert input_shape[-1] == 2, 'input has to have two features'
+        self.ndims = len(input_shape) - 2
+        assert self.ndims in [1,2,3], 'only 1D, 2D or 3D supported'
+
+        # super
         super(FFT, self).build(input_shape)
 
-    def call(self, input_im):
-        input_im = input_im[..., 0]
-        input_im = tf.cast(input_im, tf.complex64)
-        k_space = tf.fft2d(input_im)
-        shape = tf.shape(tf.expand_dims(k_space, -1))
-        k_space = tf.reshape(k_space, shape)
-        k_space = tf.concat([tf.real(k_space), tf.imag(k_space)], axis=-1)
-        k_space = tf.cast(k_space, tf.float32)
-        return k_space
+    def call(self, inputx):
+        assert inputx.shape.as_list()[-1] == 2, 'input has to have two features'
+
+        # get the right fft
+        if self.ndims == 1:
+            fft = tf.fft
+        elif self.ndims == 2:
+            fft = tf.fft2d
+        else:
+            fft = tf.fft3d
+
+        # get fft complex image
+        fft_im = fft(tf.complex(inputx[..., 0], inputx[..., 1]))
+
+        # go back to two-feature representation
+        fft_im = tf.stack([tf.real(fft_im), tf.imag(fft_im)], axis=-1)
+        return tf.cast(fft_im, tf.float32)
 
     def compute_output_shape(self, input_shape):
-        list_input_shape = list(input_shape)
-        list_input_shape[-1] = 2
-        return tuple(list_input_shape)
+        return input_shape
 
 
 class IFFT(Layer):
     """
-    ifft layer
+    ifft layer, assuming the real/imag are input/output via two features
+
+    Input: tf.float32 of size [batch_size, ..., 2]
+    Output: tf.float32 of size [batch_size, ..., 2]
     """
 
     def __init__(self, **kwargs):
         super(IFFT, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        # some input checking
+        assert input_shape[-1] == 2, 'input has to have two features'
+        self.ndims = len(input_shape) - 2
+        assert self.ndims in [1,2,3], 'only 1D, 2D or 3D supported'
+
+        # super
         super(IFFT, self).build(input_shape)
 
-    def call(self, k_space):
-        k_space = tf.complex(k_space[..., 0], k_space[..., 1])
-        output_im = tf.ifft2d(k_space)
+    def call(self, inputx):
+        assert inputx.shape.as_list()[-1] == 2, 'input has to have two features'
 
-        shape = tf.shape(tf.expand_dims(output_im, -1))
-        output_im = tf.reshape(output_im, shape)
-        output_im = tf.concat([tf.real(output_im), tf.imag(output_im)], axis=-1)
-        output_im = tf.cast(output_im, tf.float32)
-        return output_im
+        # get the right fft
+        if self.ndims == 1:
+            ifft = tf.ifft
+        elif self.ndims == 2:
+            ifft = tf.ifft2d
+        else:
+            ifft = tf.ifft3d
+
+        # get ifft complex image
+        ifft_im = ifft(tf.complex(inputx[..., 0], inputx[..., 1]))
+
+        # go back to two-feature representation
+        ifft_im = tf.stack([tf.real(ifft_im), tf.imag(ifft_im)], axis=-1)
+        return tf.cast(ifft_im, tf.float32)
 
     def compute_output_shape(self, input_shape):
-        list_input_shape = list(input_shape)
-        list_input_shape[-1] = 2
-        return tuple(list_input_shape)
+        return input_shape
