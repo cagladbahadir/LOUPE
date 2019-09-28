@@ -16,8 +16,6 @@ import tensorflow as tf
 from keras.initializers import RandomUniform, RandomNormal
 
 
-
-
 class RescaleProbMap(Layer):
     """
     Rescale Probability Map
@@ -225,8 +223,6 @@ class UnderSample(Layer):
         return input_shape[0]
 
 
-
-
 class ConcatenateZero(Layer):
     """
     Concatenate input with a zero'ed version of itself
@@ -249,8 +245,6 @@ class ConcatenateZero(Layer):
         input_shape_list = list(input_shape)
         input_shape_list[-1] *= 2
         return tuple(input_shape_list)
-
-
 
 
 class FFT(Layer):

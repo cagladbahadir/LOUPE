@@ -133,7 +133,8 @@ def _unet_from_tensor(tensor, filt, kern, acti, output_nb_feats=1):
     """
     UNet used in LOUPE
 
-    TODO: this is quite rigid right now and hardcoded (# layers, features, etc)
+    TODO: this is quite rigid and poorly written right now 
+      as well as hardcoded (# layers, features, etc)
     - use for loops and such crazy things
     - use a richer library for this, perhaps neuron
     """
