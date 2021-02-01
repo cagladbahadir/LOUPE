@@ -7,14 +7,19 @@ Python implementation in keras/tensorflow of LOUPE, which simultanously optimize
 
 
 # Training 
-Please see [train_ipmi.py](train_ipmi.py) for an example of how to train LOUPE (this uses FASHION_MNIST as an example dataset).
+Please see [train_ipmi.py](scripts/train_ipmi.py) for an example of how to train LOUPE (this uses FASHION_MNIST as an example dataset).
 
 # Citation 
 
 If you use the open source code, please cite:  
+
+-  Deep-learning-based Optimization of the Under-sampling Pattern in MRI
+C. Bahadir‡, A.Q. Wang‡, A.V. Dalca, M.R. Sabuncu.  
+IEEE TCP: Transactions on Computational Imaging. 6. pp. 1139-1152. 2020.  [arXiv:1907.11374](https://arxiv.org/abs/1907.11374).
+
 - Learning-based Optimization of the Under-sampling Pattern in MRI.  
 Cagla D. Bahadir, Adrian V. Dalca, and Mert R. Sabuncu.  
-IPMI: Information Processing in Medical Imaging (2019). [arXiv:1901.01960](https://arxiv.org/abs/1901.01960).
+IPMI: Information Processing in Medical Imaging. 2019. [arXiv:1901.01960](https://arxiv.org/abs/1901.01960).
 
 # Legacy Code (v1.0)
 Code for the original LOUPE code was moved to the [legacy](legacy) folder.
