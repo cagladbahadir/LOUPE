@@ -13,7 +13,7 @@ Please see [train_ipmi.py](scripts/train_ipmi.py) for an example of how to train
 
 If you use the open source code, please cite:  
 
--  Deep-learning-based Optimization of the Under-sampling Pattern in MRI
+-  Deep-learning-based Optimization of the Under-sampling Pattern in MRI  
 C. Bahadir‡, A.Q. Wang‡, A.V. Dalca, M.R. Sabuncu.  
 IEEE TCP: Transactions on Computational Imaging. 6. pp. 1139-1152. 2020.  [arXiv:1907.11374](https://arxiv.org/abs/1907.11374).
 
